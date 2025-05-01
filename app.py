@@ -93,6 +93,31 @@ if not os.path.exists('.streamlit'):
             f.write('app_password = "aclrehab"\n')
             f.write('\n# Add other secrets below as needed\n')
 
+# Initialize empty data files if they don't exist
+if not os.path.exists('data/user_profile.csv'):
+    pd.DataFrame({
+        'name': [''],
+        'age': [30],
+        'weight': [70.0],
+        'height': [170.0],
+        'surgery_date': [''],
+        'injury_type': ['ACL Tear']
+    }).to_csv('data/user_profile.csv', index=False)
+
+if not os.path.exists('data/exercise_log.csv'):
+    pd.DataFrame(columns=[
+        'date', 'category', 'exercise', 'sets', 'reps', 'weight', 'notes'
+    ]).to_csv('data/exercise_log.csv', index=False)
+
+if not os.path.exists('data/rom_pain_log.csv'):
+    pd.DataFrame(columns=[
+        'date', 'extension_angle', 'flexion_angle', 'pain_level', 'swelling', 'notes'
+    ]).to_csv('data/rom_pain_log.csv', index=False)
+
+if not os.path.exists('data/power_level.txt'):
+    with open('data/power_level.txt', 'w') as f:
+        f.write('9000')
+
 # Initialize session state variables if they don't exist
 if 'user_data' not in st.session_state:
     # Check if user data file exists
