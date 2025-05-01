@@ -1,0 +1,236 @@
+/* Custom styling for ACL Rehab Tracker */
+
+/* Main styling for the entire app */
+.main {
+    background-image: linear-gradient(to right, #121212, #262626, #121212);
+    color: #f0f0f0;
+}
+
+/* Header styling */
+h1, h2, h3 {
+    color: #ffcc00;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+}
+
+/* Super Saiyan glowing effect for headers */
+h1 {
+    position: relative;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+/* Glowing animation */
+@keyframes glow {
+    from {
+        text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #ffcc00, 0 0 20px #ffcc00;
+    }
+    to {
+        text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #ffcc00, 0 0 40px #ffcc00;
+    }
+}
+
+/* Powering up effect for progress bars */
+.stProgress > div > div {
+    background-color: #ffcc00;
+    background-image: linear-gradient(90deg, #ff4d00, #ffcc00, #fff700);
+    background-size: 200% 100%;
+    animation: power-up 2s linear infinite;
+}
+
+@keyframes power-up {
+    0% {
+        background-position: 100% 0%;
+    }
+    100% {
+        background-position: 0% 0%;
+    }
+}
+
+/* Custom styling for tables */
+.dataframe {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    border: 1px solid #444;
+}
+
+.dataframe th {
+    background-color: #333;
+    color: #ffcc00;
+    text-align: center;
+}
+
+.dataframe td {
+    border-bottom: 1px solid #444;
+}
+
+/* Custom styling for buttons */
+.stButton>button {
+    background-color: #333;
+    color: #ffcc00;
+    border: 2px solid #ffcc00;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.stButton>button:hover {
+    background-color: #ffcc00;
+    color: #333;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(255, 204, 0, 0.8);
+}
+
+/* Ki charge effect for button click */
+.stButton>button:active {
+    animation: ki-charge 0.5s ease;
+}
+
+@keyframes ki-charge {
+    0% {
+        box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+        transform: scale(1.05);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(255, 204, 0, 1);
+        transform: scale(1.1);
+    }
+    100% {
+        box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+        transform: scale(1.05);
+    }
+}
+
+/* Custom styling for tabs */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 10px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    height: 50px;
+    white-space: pre-wrap;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 5px 5px 0 0;
+    border: 1px solid #444;
+    border-bottom: none;
+    color: #aaa;
+    transition: all 0.3s ease;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: rgba(255, 204, 0, 0.1) !important;
+    color: #ffcc00 !important;
+    border-color: #ffcc00 !important;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+}
+
+/* Card-like containers for sections */
+.css-card {
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid #444;
+}
+
+/* Success message styling */
+.success-box {
+    background-color: rgba(0, 200, 0, 0.1);
+    border: 1px solid #00c000;
+    border-radius: 10px;
+    padding: 10px;
+    color: #00c000;
+}
+
+/* Warning message styling */
+.warning-box {
+    background-color: rgba(255, 150, 0, 0.1);
+    border: 1px solid #ff9600;
+    border-radius: 10px;
+    padding: 10px;
+    color: #ff9600;
+}
+
+/* Info message styling */
+.info-box {
+    background-color: rgba(0, 120, 250, 0.1);
+    border: 1px solid #0078fa;
+    border-radius: 10px;
+    padding: 10px;
+    color: #0078fa;
+}
+
+/* Sidebar styling */
+.css-1d391kg {
+    background-color: #121212;
+}
+
+/* Anime GIF styling */
+.anime-gif {
+    max-width: 200px;
+    margin: 0 auto;
+    display: block;
+    filter: drop-shadow(0 0 10px rgba(255, 204, 0, 0.7));
+}
+
+.gif-container {
+    position: relative;
+    width: 100%;
+    text-align: center;
+    margin: 20px 0;
+}
+
+/* Pulsating animation for GIFs */
+.pulsate {
+    animation: gif-pulse 2s infinite ease-in-out;
+}
+
+@keyframes gif-pulse {
+    0% {
+        transform: scale(0.95);
+        filter: drop-shadow(0 0 5px rgba(255, 204, 0, 0.5));
+    }
+    50% {
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 15px rgba(255, 204, 0, 0.8));
+    }
+    100% {
+        transform: scale(0.95);
+        filter: drop-shadow(0 0 5px rgba(255, 204, 0, 0.5));
+    }
+}
+
+/* Special achievement box styling */
+.achievement-box {
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.achievement-box::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(255, 204, 0, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
+    z-index: -1;
+    animation: achievement-glow 3s infinite alternate;
+}
+
+@keyframes achievement-glow {
+    0% {
+        opacity: 0.3;
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
+}

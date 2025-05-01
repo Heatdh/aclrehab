@@ -1,0 +1,103 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+stream/
+.env
+.venv
+
+# Streamlit
+.streamlit/secrets.toml
+.streamlit/config.toml
+.streamlit/credentials.toml
+
+# Data
+data/*.csv
+data/exercise_log.csv
+data/rom_pain_log.csv
+data/user_profile.csv
+data/power_level.txt
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.project
+.pydevproject
+.settings
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
+
+# Temporary files
+*.bak
+*.tmp
+*~
