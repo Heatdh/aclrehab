@@ -19,7 +19,8 @@ from db_utils import (
     save_exercise_log,
     get_rom_pain_log,
     save_rom_pain_log,
-    get_user_list
+    get_user_list,
+    init_connection
 )
 
 # Set page config
@@ -29,6 +30,13 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Check MongoDB connection early
+mongodb_connected = init_connection() is not None
+if not mongodb_connected:
+    st.warning("⚠️ Not connected to MongoDB. Using local file storage as fallback.")
+else:
+    st.success("✅ Connected to MongoDB successfully!")
 
 # Load custom CSS
 def load_css():

@@ -18,26 +18,33 @@ def get_mongo_uri():
         uri = st.secrets.get("mongo_uri", None)
         if uri:
             return uri
-    except:
-        pass
+    except Exception as e:
+        st.warning(f"Could not access secrets: {e}. Trying environment variables.")
     
     # Try to get from environment variable
-    uri = os.environ.get("MONGO_URI")
-    if uri:
-        return uri
+    try:
+        uri = os.environ.get("MONGO_URI")
+        if uri:
+            return uri
+    except Exception:
+        pass
     
-    # Default connection string (localhost)
-    return "mongodb://localhost:27017"
+    # Last resort, hard-coded connection string (for development only)
+    return "mongodb+srv://rayendhahri:pTPUAGUuS8q2gbLM@cluster0.qacb82j.mongodb.net/?retryWrites=true&w=majority"
 
 # Initialize database connection
 @st.cache_resource
 def init_connection():
     try:
         uri = get_mongo_uri()
-        # Add SSL configuration to handle connection issues
+        # Add SSL configuration and retry options for better reliability
         client = MongoClient(
             uri,
-            tlsAllowInvalidCertificates=True  # This bypasses certificate validation
+            tlsAllowInvalidCertificates=True,  # This bypasses certificate validation
+            serverSelectionTimeoutMS=10000,    # Give servers more time to respond
+            retryWrites=True,                  # Retry write operations if they fail
+            connectTimeoutMS=30000,            # Longer connection timeout
+            socketTimeoutMS=30000              # Longer socket timeout
         )
         # Test the connection
         client.admin.command('ping')
