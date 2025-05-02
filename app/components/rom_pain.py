@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from datetime import datetime
+from db_utils import remove_rom_pain_entry
 
 def show_rom_pain():
     st.title("Range of Motion & Pain Tracker")
@@ -179,9 +180,6 @@ def show_rom_pain():
                 # Now concatenate with matching dtypes
                 st.session_state.rom_pain_log = pd.concat([st.session_state.rom_pain_log, new_entry], ignore_index=True)
             
-            # Ensure data is saved immediately
-            st.session_state.rom_pain_log.to_csv('data/rom_pain_log.csv', index=False)
-            
             # Update power level
             st.session_state.power_level += total_power_gain
             st.session_state.show_power_up = True
@@ -198,9 +196,8 @@ def show_rom_pain():
             if extension_angle <= 0 and flexion_angle >= 130:
                 st.markdown("""
                 <div style="text-align: center; padding: 15px; background-color: rgba(255, 204, 0, 0.1); border-radius: 10px; margin: 20px 0;">
-                    <img src="app/images/goku_nobackground.gif" style="max-width: 120px; margin: 0 auto; display: block;">
-                    <h3 style="color: #ffcc00;">Perfect ROM Achievement Unlocked!</h3>
-                    <p>Your knee flexibility is reaching superhuman levels!</p>
+                    <h3 style="color: #ffcc00;">ACHIEVEMENT UNLOCKED: NORMAL ROM!</h3>
+                    <p>You've achieved normal knee range of motion! This is a significant milestone in your recovery!</p>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -217,131 +214,208 @@ def show_rom_pain():
             st.success(f"Measurements logged successfully! Power level is now {st.session_state.power_level:,}!")
     
     with tab2:
-        if st.session_state.rom_pain_log.empty:
-            st.info("No ROM & pain data logged yet. Start tracking to see your progress!")
+        # Filter out empty dataframes
+        if not hasattr(st.session_state, 'rom_pain_log') or st.session_state.rom_pain_log.empty:
+            st.info("No ROM or pain data recorded yet. Use the 'Log ROM & Pain' tab to start tracking.")
         else:
-            st.markdown('<div class="css-card">', unsafe_allow_html=True)
+            st.subheader("ROM & Pain History")
             
-            # Convert date strings to datetime
-            st.session_state.rom_pain_log['date'] = pd.to_datetime(st.session_state.rom_pain_log['date'])
+            # Sort dataframe by date (most recent first)
+            history_df = st.session_state.rom_pain_log.sort_values(by='date', ascending=False).copy()
             
-            # Date filter for history
-            date_range = st.date_input(
-                "Filter by date range",
-                value=(
-                    st.session_state.rom_pain_log['date'].min().date(),
-                    st.session_state.rom_pain_log['date'].max().date()
-                ),
-                key="rom_date_filter"
-            )
+            # Display data table with delete buttons
+            for index, row in history_df.iterrows():
+                col1, col2, col3, col4, col5, col6 = st.columns([2, 2, 2, 2, 3, 1])
+                
+                with col1:
+                    st.markdown(f"**{row['date']}**")
+                with col2:
+                    st.markdown(f"Extension: **{row['extension_angle']}°**")
+                with col3:
+                    st.markdown(f"Flexion: **{row['flexion_angle']}°**")
+                with col4:
+                    st.markdown(f"Pain: **{row['pain_level']}/10**")
+                with col5:
+                    swelling_levels = {0: "None", 1: "Minimal (+1)", 2: "Moderate (+2)", 3: "Severe (+3)"}
+                    swelling_text = swelling_levels.get(row['swelling'], "Unknown")
+                    st.markdown(f"Swelling: **{swelling_text}**")
+                with col6:
+                    if st.button("🗑️", key=f"delete_rom_{row['date']}"):
+                        if st.session_state.current_username:
+                            # Call MongoDB function to remove the entry
+                            success, message = remove_rom_pain_entry(st.session_state.current_username, row['date'])
+                            if success:
+                                # Also update the session state dataframe
+                                st.session_state.rom_pain_log = st.session_state.rom_pain_log[
+                                    st.session_state.rom_pain_log['date'] != row['date']
+                                ]
+                                st.success(message)
+                                st.rerun()
+                            else:
+                                st.error(message)
+                
+                # Display notes if available
+                if row['notes'] and not pd.isna(row['notes']) and row['notes'].strip():
+                    st.markdown(f"**Notes:** {row['notes']}")
+                
+                # Add a separator
+                st.markdown("---")
             
-            # Filter dataframe by date range
-            filtered_log = st.session_state.rom_pain_log
-            if len(date_range) == 2:
-                start_date, end_date = date_range
-                mask = (filtered_log['date'].dt.date >= start_date) & (filtered_log['date'].dt.date <= end_date)
-                filtered_log = filtered_log.loc[mask]
-            
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-            # ROM Progress
+            # ROM Progress Chart
             st.subheader("ROM Progress Chart")
             
-            # Plot extension and flexion trends
-            fig1 = px.line(
-                filtered_log, 
+            # Create a copy for plotting and ensure date is in datetime format
+            plot_df = history_df.copy()
+            plot_df['date'] = pd.to_datetime(plot_df['date'])
+            plot_df = plot_df.sort_values('date')  # Sort by date for the chart
+            
+            # Create ROM chart
+            fig_rom = px.line(
+                plot_df, 
                 x='date', 
                 y=['extension_angle', 'flexion_angle'],
-                labels={
-                    'date': 'Date',
-                    'value': 'Angle (°)',
-                    'variable': 'Measurement'
-                },
-                title="Extension & Flexion Progress",
+                labels={'value': 'Angle (degrees)', 'date': 'Date', 'variable': 'Measurement'},
+                title='ROM Progress Over Time',
+                markers=True,
                 color_discrete_map={
-                    'extension_angle': '#ff9900',
-                    'flexion_angle': '#00bfff'
+                    'extension_angle': '#ff9900',  # Orange color for extension
+                    'flexion_angle': '#00ccff'     # Blue color for flexion
                 }
             )
             
-            # Add target lines
-            fig1.add_hline(y=0, line_dash="dash", line_color="#ffcc00", annotation_text="Extension Target")
-            fig1.add_hline(y=130, line_dash="dash", line_color="#00bfff", annotation_text="Flexion Target")
-            
-            # Update layout for anime theme
-            fig1.update_layout(
-                plot_bgcolor='rgba(0,0,0,0.1)',
-                paper_bgcolor='rgba(0,0,0,0.1)',
-                font_color='#cccccc',
-                title_font_color='#ffcc00',
-                legend_title_font_color='#ffcc00',
-                xaxis=dict(showgrid=False),
-                yaxis=dict(gridcolor='rgba(255,255,255,0.1)')
+            # Customize the ROM chart
+            fig_rom.update_layout(
+                xaxis_title='Date',
+                yaxis_title='Angle (degrees)',
+                legend_title='Measurement',
+                hovermode='x unified',
+                template='plotly_dark',
+                height=500,
             )
             
-            st.plotly_chart(fig1, use_container_width=True)
+            st.plotly_chart(fig_rom, use_container_width=True)
             
-            # Pain & Swelling Trends
-            st.subheader("Pain & Swelling Trends")
+            # Pain & Swelling Progress Chart
+            st.subheader("Pain & Swelling Progress Chart")
             
-            fig2 = px.line(
-                filtered_log, 
+            # Create pain chart
+            fig_pain = px.line(
+                plot_df, 
                 x='date', 
                 y=['pain_level', 'swelling'],
-                labels={
-                    'date': 'Date',
-                    'value': 'Level',
-                    'variable': 'Measurement'
-                },
-                title="Pain & Swelling Trends",
+                labels={'value': 'Level', 'date': 'Date', 'variable': 'Measurement'},
+                title='Pain & Swelling Progress Over Time',
+                markers=True,
                 color_discrete_map={
-                    'pain_level': '#ff4500',
-                    'swelling': '#9370db'
+                    'pain_level': '#ff4500',      # Red color for pain
+                    'swelling': '#9966ff'        # Purple color for swelling
                 }
             )
             
-            # Add target line
-            fig2.add_hline(y=3, line_dash="dash", line_color="#ffcc00", annotation_text="Pain Target")
-            fig2.add_hline(y=1, line_dash="dash", line_color="#9370db", annotation_text="Swelling Target")
-            
-            # Update layout for anime theme
-            fig2.update_layout(
-                plot_bgcolor='rgba(0,0,0,0.1)',
-                paper_bgcolor='rgba(0,0,0,0.1)',
-                font_color='#cccccc',
-                title_font_color='#ffcc00',
-                legend_title_font_color='#ffcc00',
-                xaxis=dict(showgrid=False),
-                yaxis=dict(gridcolor='rgba(255,255,255,0.1)')
+            # Customize the pain chart
+            fig_pain.update_layout(
+                xaxis_title='Date',
+                yaxis_title='Level',
+                legend_title='Measurement',
+                hovermode='x unified',
+                template='plotly_dark',
+                height=500,
             )
             
-            st.plotly_chart(fig2, use_container_width=True)
+            # For pain level, set y-axis range from 0 to 10
+            fig_pain.update_yaxes(range=[0, 10])
             
-            # Data Table
-            st.subheader("Measurement History")
+            st.plotly_chart(fig_pain, use_container_width=True)
             
-            # Calculate ROM ratio for display (flexion/extension - higher is better)
-            display_df = filtered_log.copy()
-            display_df['rom_ratio'] = display_df['flexion_angle'] / (display_df['extension_angle'] + 1)
-            display_df['rom_ratio'] = display_df['rom_ratio'].round(1)
+            # ROM Trends Analysis
+            st.subheader("ROM Trends Analysis")
             
-            # Format the date for display
-            display_df['date'] = display_df['date'].dt.strftime('%Y-%m-%d')
-            
-            # Rename columns for display
-            display_df = display_df.rename(columns={
-                'date': 'Date',
-                'extension_angle': 'Extension (°)',
-                'flexion_angle': 'Flexion (°)',
-                'pain_level': 'Pain (0-10)',
-                'swelling': 'Swelling (0-3)',
-                'rom_ratio': 'ROM Ratio',
-                'notes': 'Notes'
-            })
-            
-            # Sort by date (newest first) and display
-            st.dataframe(
-                display_df.sort_values('Date', ascending=False),
-                hide_index=True,
-                use_container_width=True
-            )
+            if len(plot_df) >= 2:
+                # Calculate ROM improvements
+                first_extension = plot_df.iloc[0]['extension_angle']
+                last_extension = plot_df.iloc[-1]['extension_angle']
+                extension_improvement = first_extension - last_extension  # Lower is better for extension
+                
+                first_flexion = plot_df.iloc[0]['flexion_angle']
+                last_flexion = plot_df.iloc[-1]['flexion_angle']
+                flexion_improvement = last_flexion - first_flexion  # Higher is better for flexion
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.metric(
+                        label="Extension Improvement", 
+                        value=f"{last_extension:.1f}°", 
+                        delta=f"{extension_improvement:.1f}°" if extension_improvement > 0 else f"{-extension_improvement:.1f}°",
+                        delta_color="normal" if extension_improvement > 0 else "inverse"
+                    )
+                    
+                with col2:
+                    st.metric(
+                        label="Flexion Improvement", 
+                        value=f"{last_flexion:.1f}°", 
+                        delta=f"{flexion_improvement:.1f}°",
+                        delta_color="normal" if flexion_improvement > 0 else "inverse"
+                    )
+                
+                # Calculate normal knee ROM achievement percentage
+                normal_extension_target = 0  # 0 degrees is normal extension
+                normal_flexion_target = 135  # 135 degrees is normal flexion
+                
+                extension_percentage = min(100, max(0, 100 - ((last_extension - normal_extension_target) / 5 * 100)))
+                flexion_percentage = min(100, max(0, (last_flexion / normal_flexion_target) * 100))
+                
+                # Calculate overall ROM achievement
+                overall_percentage = (extension_percentage + flexion_percentage) / 2
+                
+                st.markdown(f"""
+                <div style="margin: 20px 0; padding: 20px; background-color: rgba(0,0,0,0.2); border-radius: 10px;">
+                    <h4 style="text-align: center;">Overall ROM Achievement: {overall_percentage:.1f}%</h4>
+                    <div style="background-color: rgba(0,0,0,0.3); border-radius: 5px; height: 30px; width: 100%; margin-top: 10px;">
+                        <div style="background-image: linear-gradient(90deg, #ff4500, #ffcc00, #00cc00); 
+                                  width: {overall_percentage}%; 
+                                  height: 100%; 
+                                  border-radius: 5px;">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Recovery phase recommendations based on ROM
+                st.subheader("Recovery Phase Recommendations")
+                
+                rehab_tips = []
+                
+                # Extension recommendations
+                if last_extension > 10:
+                    rehab_tips.append("❗ **Prioritize extension exercises** - Your extension is limited above 10°. Focus on achieving full extension with exercises like prone hangs and heel props.")
+                elif last_extension > 5:
+                    rehab_tips.append("⚠️ **Continue extension work** - You're progressing but still need to work on achieving full extension (0°). Try passive extension stretches.")
+                elif last_extension > 0:
+                    rehab_tips.append("✅ **Extension is good** - You're approaching normal extension. Keep maintaining with regular stretching.")
+                else:
+                    rehab_tips.append("🌟 **Extension is excellent** - You've achieved full or hyperextension. Keep maintaining this ROM.")
+                
+                # Flexion recommendations
+                if last_flexion < 90:
+                    rehab_tips.append("❗ **Focus on flexion exercises** - Your flexion is below 90°. This is a priority to improve function. Try heel slides, wall slides, and assisted flexion exercises.")
+                elif last_flexion < 120:
+                    rehab_tips.append("⚠️ **Continue flexion work** - You have functional flexion but need to keep improving. Try seated heel slides and gentle gym ball rolling.")
+                elif last_flexion < 135:
+                    rehab_tips.append("✅ **Flexion is good** - You're approaching normal flexion. Continue with regular stretching to achieve full ROM.")
+                else:
+                    rehab_tips.append("🌟 **Flexion is excellent** - You've achieved normal flexion. Focus on maintaining this ROM.")
+                
+                for tip in rehab_tips:
+                    st.markdown(tip)
+                
+                # Show reference values
+                st.info("📊 **Reference Values:** Normal knee ROM is 0° extension (or slight hyperextension) and 135-150° flexion.")
+                
+            else:
+                st.info("Not enough data points to analyze trends. Log more ROM measurements to see your progress analysis.")

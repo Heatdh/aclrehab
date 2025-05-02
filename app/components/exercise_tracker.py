@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+from db_utils import remove_exercise_entry
 
 def show_exercise_tracker():
     st.title("Exercise Tracker")
@@ -346,8 +347,6 @@ def show_exercise_tracker():
             
             # Ensure data is saved immediately
             try:
-                st.session_state.exercise_log.to_csv('data/exercise_log.csv', index=False)
-                
                 # Update power level
                 st.session_state.power_level += power_gain
                 st.session_state.show_power_up = True
@@ -364,7 +363,7 @@ def show_exercise_tracker():
                 # Show success message
                 st.success(f"Exercise logged successfully! Power level increased to {st.session_state.power_level:,}!")
             except Exception as e:
-                st.error(f"Error saving exercise data: {e}")
+                st.error(f"Error updating power level: {e}")
             
             # Special messages based on power level milestones
             if st.session_state.power_level > 9000:
@@ -404,12 +403,11 @@ def show_exercise_tracker():
                 """, unsafe_allow_html=True)
     
     with tab2:
-        if st.session_state.exercise_log.empty:
+        if not hasattr(st.session_state, 'exercise_log') or st.session_state.exercise_log.empty:
             st.info("No exercises logged yet. Start tracking your workouts to see your history!")
         else:
             st.markdown('<div class="css-card">', unsafe_allow_html=True)
             
-            # Group exercises by date
             # Convert date strings to datetime
             st.session_state.exercise_log['date'] = pd.to_datetime(st.session_state.exercise_log['date'])
             
@@ -481,16 +479,49 @@ def show_exercise_tracker():
                     else:
                         display_group = group
                     
-                    # Display the exercise data
-                    display_columns = ['exercise', 'sets', 'reps', 'weight', 'notes']
-                    if 'category' in display_group.columns:
-                        display_columns = ['category'] + display_columns
+                    # Display each exercise with a delete button
+                    for idx, row in display_group.iterrows():
+                        col1, col2, col3, col4, col5, col6 = st.columns([3, 1, 1, 1, 3, 1])
                         
-                    st.dataframe(
-                        display_group[display_columns].reset_index(drop=True),
-                        hide_index=True,
-                        use_container_width=True
-                    )
+                        with col1:
+                            if 'category' in row:
+                                st.markdown(f"**{row['exercise']}** ({row['category']})")
+                            else:
+                                st.markdown(f"**{row['exercise']}**")
+                        
+                        with col2:
+                            st.markdown(f"Sets: **{row['sets']}**")
+                        
+                        with col3:
+                            st.markdown(f"Reps: **{row['reps']}**")
+                        
+                        with col4:
+                            st.markdown(f"Weight: **{row['weight']} kg**")
+                        
+                        with col5:
+                            if row['notes'] and not pd.isna(row['notes']) and row['notes'].strip():
+                                st.markdown(f"*{row['notes']}*")
+                        
+                        with col6:
+                            # Convert datetime to string format for MongoDB query
+                            date_str = row['date'].strftime('%Y-%m-%d')
+                            if st.button("🗑️", key=f"delete_exercise_{date_str}_{row['exercise']}"):
+                                if st.session_state.current_username:
+                                    # Call MongoDB function to remove the entry
+                                    success, message = remove_exercise_entry(st.session_state.current_username, date_str, row['exercise'])
+                                    if success:
+                                        # Also update the session state dataframe
+                                        st.session_state.exercise_log = st.session_state.exercise_log[
+                                            ~((st.session_state.exercise_log['date'] == row['date']) & 
+                                              (st.session_state.exercise_log['exercise'] == row['exercise']))
+                                        ]
+                                        st.success(message)
+                                        st.rerun()
+                                    else:
+                                        st.error(message)
+                        
+                        # Add a separator between exercises
+                        st.markdown("---")
                     
                     # Calculate the day's power level gain
                     day_volume = (display_group['sets'] * display_group['reps'] * (1 + display_group['weight']/10)).sum()
