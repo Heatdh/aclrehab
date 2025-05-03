@@ -241,6 +241,12 @@ def main_app():
         menu_icon="cast",
         default_index=0,
         orientation="horizontal",
+        styles={
+            "container": {"padding": "0!important", "background-color": "rgba(25, 30, 40, 0.3)", "border-radius": "10px"},
+            "icon": {"color": "rgba(255, 255, 255, 0.7)", "font-size": "16px"}, 
+            "nav-link": {"font-size": "14px", "text-align": "center", "margin":"0px", "padding": "10px", "border-radius": "5px"},
+            "nav-link-selected": {"background-color": "rgba(54, 209, 220, 0.2)", "color": "#36d1dc", "font-weight": "600"},
+        }
     )
 
     # App title with modern theme
@@ -250,9 +256,82 @@ def main_app():
         <p style="font-style: italic; color: #aaa; letter-spacing: 1px;">Beyond Limits: Achieve Your Ultimate Recovery</p>
     </div>
     """, unsafe_allow_html=True)
+    
+    # Feature cards on first page visit
+    if 'last_page' not in st.session_state:
+        st.session_state.last_page = None
+    
+    if st.session_state.last_page != selected:
+        # Create visual feature cards for the first visit to a page
+        if selected in ["Profile", "Rehab Plan", "Equipment Exercises", "Exercise Tracker", "ROM & Pain", "Progress Dashboard"]:
+            # Feature highlights
+            features = {
+                "Profile": {
+                    "icon": "person-circle",
+                    "title": "User Profile",
+                    "description": "Manage your personal details, surgery information, and recovery goals.",
+                    "color": "#36d1dc"
+                },
+                "Rehab Plan": {
+                    "icon": "journal-check",
+                    "title": "Rehabilitation Plan",
+                    "description": "Follow a structured phase-by-phase recovery protocol tailored for ACL recovery.",
+                    "color": "#5b86e5"
+                },
+                "Equipment Exercises": {
+                    "icon": "tools",
+                    "title": "Exercise Database",
+                    "description": "Browse exercises by category with detailed instructions for proper form.",
+                    "color": "#41c7b9"
+                },
+                "Exercise Tracker": {
+                    "icon": "activity",
+                    "title": "Exercise Logger",
+                    "description": "Track your workouts with sets, reps, and weights to monitor your progress.",
+                    "color": "#4d8af0"
+                },
+                "ROM & Pain": {
+                    "icon": "thermometer-half",
+                    "title": "ROM & Pain Tracker",
+                    "description": "Monitor your range of motion and track pain levels throughout recovery.",
+                    "color": "#5c9ce6"
+                },
+                "Progress Dashboard": {
+                    "icon": "graph-up",
+                    "title": "Analytics Dashboard",
+                    "description": "Visualize your recovery metrics and see your progress over time.",
+                    "color": "#6e94f2"
+                }
+            }
+            
+            feature = features[selected]
+            
+            # Display feature card
+            st.markdown(f"""
+            <div style="background: linear-gradient(135deg, {feature['color']}22, {feature['color']}11); 
+                        border-radius: 16px; 
+                        padding: 20px; 
+                        margin-bottom: 30px;
+                        border-left: 5px solid {feature['color']};
+                        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+                        backdrop-filter: blur(5px);
+                        -webkit-backdrop-filter: blur(5px);">
+                <div style="display: flex; align-items: center;">
+                    <i class="bi bi-{feature['icon']}" style="font-size: 40px; color: {feature['color']}; margin-right: 20px;"></i>
+                    <div>
+                        <h2 style="margin: 0; color: {feature['color']};">{feature['title']}</h2>
+                        <p style="margin: 5px 0 0 0; color: rgba(255,255,255,0.8);">{feature['description']}</p>
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    # Update last page
+    st.session_state.last_page = selected
 
     # Show current user in a nicer format
     st.sidebar.markdown("""
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
     <div class="fitness-card" style="padding: 15px; margin-bottom: 20px;">
         <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">LOGGED IN AS</div>
         <div style="font-size: 1.2rem; font-weight: 600; color: #36d1dc; margin-top: 5px;">{}</div>

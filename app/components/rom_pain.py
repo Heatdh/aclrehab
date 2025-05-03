@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from datetime import datetime
 from db_utils import remove_rom_pain_entry
 
@@ -12,12 +13,20 @@ def show_rom_pain():
     
     with tab1:
         with st.form("rom_pain_form"):
-            st.markdown('<div class="css-card">', unsafe_allow_html=True)
+            st.markdown('<div class="fitness-card">', unsafe_allow_html=True)
             
             # Date picker defaulted to today
             log_date = st.date_input("Date", value=datetime.today())
             
-            st.subheader("Range of Motion")
+            # ROM section with better styling
+            st.markdown("""
+            <div style="margin: 20px 0 10px 0;">
+                <h3 style="color: #36d1dc; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                    Range of Motion
+                </h3>
+            </div>
+            """, unsafe_allow_html=True)
+            
             col1, col2 = st.columns(2)
             
             with col1:
@@ -48,39 +57,63 @@ def show_rom_pain():
                 # Calculate flexion power level (better flexion = more power)
                 flexion_power = int(flexion_angle * 30)
             
-            # Visual representation of ROM using anime theme
+            # Visual representation of ROM using modern gauges
             col1, col2 = st.columns(2)
             with col1:
-                # Extension visualization
+                # Extension visualization with better styling
                 ext_percent = ((extension_angle + 15) / 45) * 100  # Convert to percentage (from -15 to 30)
-                ext_color = "#ffcc00" if extension_angle <= 0 else "#ff9900" if extension_angle <= 10 else "#ff4500"
+                ext_color = "#36d1dc" if extension_angle <= 0 else "#5b86e5" if extension_angle <= 10 else "#ff6b6b"
                 
                 st.markdown(f"""
-                <div style="text-align: center; margin-bottom: 10px;">
-                    <p>Extension Power</p>
-                    <div style="background-color: rgba(0,0,0,0.3); border-radius: 5px; height: 20px; width: 100%;">
-                        <div style="background-color: {ext_color}; width: {max(5, 100-ext_percent)}%; height: 100%; border-radius: 5px;"></div>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Extension Power</div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 10px; height: 10px; width: 100%; overflow: hidden;">
+                        <div style="background: linear-gradient(90deg, {ext_color}, {ext_color}99); width: {max(5, 100-ext_percent)}%; height: 100%; border-radius: 10px;"></div>
                     </div>
-                    <p style="color: {ext_color};">{extension_power} Power Points</p>
+                    <div style="font-size: 1.5rem; font-weight: 600; color: {ext_color}; margin-top: 10px;">{extension_power}</div>
+                    <div style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">POWER POINTS</div>
+                </div>
+                
+                <div style="text-align: center; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; margin-top: 15px;">
+                    <div style="font-size: 2.5rem; font-weight: 700; color: {ext_color};">{extension_angle}°</div>
+                    <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">
+                        {get_extension_status(extension_angle)}
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
                 
             with col2:
-                # Flexion visualization
+                # Flexion visualization with better styling
                 flex_percent = (flexion_angle / 160) * 100  # Convert to percentage (from 0 to 160)
-                flex_color = "#ff4500" if flexion_angle < 90 else "#ff9900" if flexion_angle < 120 else "#ffcc00"
+                flex_color = "#ff6b6b" if flexion_angle < 90 else "#5b86e5" if flexion_angle < 120 else "#36d1dc"
                 
                 st.markdown(f"""
-                <div style="text-align: center; margin-bottom: 10px;">
-                    <p>Flexion Power</p>
-                    <div style="background-color: rgba(0,0,0,0.3); border-radius: 5px; height: 20px; width: 100%;">
-                        <div style="background-color: {flex_color}; width: {max(5, flex_percent)}%; height: 100%; border-radius: 5px;"></div>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Flexion Power</div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 10px; height: 10px; width: 100%; overflow: hidden;">
+                        <div style="background: linear-gradient(90deg, {flex_color}99, {flex_color}); width: {max(5, flex_percent)}%; height: 100%; border-radius: 10px;"></div>
                     </div>
-                    <p style="color: {flex_color};">{flexion_power} Power Points</p>
+                    <div style="font-size: 1.5rem; font-weight: 600; color: {flex_color}; margin-top: 10px;">{flexion_power}</div>
+                    <div style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">POWER POINTS</div>
+                </div>
+                
+                <div style="text-align: center; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; margin-top: 15px;">
+                    <div style="font-size: 2.5rem; font-weight: 700; color: {flex_color};">{flexion_angle}°</div>
+                    <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">
+                        {get_flexion_status(flexion_angle)}
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
             
-            st.subheader("Pain & Swelling")
+            # Pain & Swelling section with better styling
+            st.markdown("""
+            <div style="margin: 30px 0 10px 0;">
+                <h3 style="color: #36d1dc; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                    Pain & Swelling
+                </h3>
+            </div>
+            """, unsafe_allow_html=True)
+            
             col1, col2 = st.columns(2)
             
             with col1:
@@ -111,33 +144,49 @@ def show_rom_pain():
                 # Less swelling = more power
                 swelling_power = int((3 - swelling_value) * 100)
             
-            # Visual representation of pain/swelling
+            # Visual representation of pain/swelling with better design
             col1, col2 = st.columns(2)
             with col1:
                 # Pain visualization
-                pain_color = "#ffcc00" if pain_level <= 3 else "#ff9900" if pain_level <= 6 else "#ff4500"
+                pain_color = "#36d1dc" if pain_level <= 3 else "#5b86e5" if pain_level <= 6 else "#ff6b6b"
                 
                 st.markdown(f"""
-                <div style="text-align: center; margin-bottom: 10px;">
-                    <p>Pain Resistance</p>
-                    <div style="background-color: rgba(0,0,0,0.3); border-radius: 5px; height: 20px; width: 100%;">
-                        <div style="background-color: {pain_color}; width: {max(5, 100-(pain_level*10))}%; height: 100%; border-radius: 5px;"></div>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Pain Resistance</div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 10px; height: 10px; width: 100%; overflow: hidden;">
+                        <div style="background: linear-gradient(90deg, {pain_color}, {pain_color}99); width: {max(5, 100-(pain_level*10))}%; height: 100%; border-radius: 10px;"></div>
                     </div>
-                    <p style="color: {pain_color};">{pain_power} Power Points</p>
+                    <div style="font-size: 1.5rem; font-weight: 600; color: {pain_color}; margin-top: 10px;">{pain_power}</div>
+                    <div style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">POWER POINTS</div>
+                </div>
+                
+                <div style="text-align: center; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; margin-top: 15px;">
+                    <div style="font-size: 2.5rem; font-weight: 700; color: {pain_color};">{pain_level}/10</div>
+                    <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">
+                        {get_pain_status(pain_level)}
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
                 
             with col2:
                 # Swelling visualization
-                swell_color = "#ffcc00" if swelling_value <= 1 else "#ff9900" if swelling_value <= 2 else "#ff4500"
+                swell_color = "#36d1dc" if swelling_value <= 1 else "#5b86e5" if swelling_value <= 2 else "#ff6b6b"
                 
                 st.markdown(f"""
-                <div style="text-align: center; margin-bottom: 10px;">
-                    <p>Swelling Control</p>
-                    <div style="background-color: rgba(0,0,0,0.3); border-radius: 5px; height: 20px; width: 100%;">
-                        <div style="background-color: {swell_color}; width: {max(5, 100-(swelling_value*33))}%; height: 100%; border-radius: 5px;"></div>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Swelling Control</div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 10px; height: 10px; width: 100%; overflow: hidden;">
+                        <div style="background: linear-gradient(90deg, {swell_color}, {swell_color}99); width: {max(5, 100-(swelling_value*33))}%; height: 100%; border-radius: 10px;"></div>
                     </div>
-                    <p style="color: {swell_color};">{swelling_power} Power Points</p>
+                    <div style="font-size: 1.5rem; font-weight: 600; color: {swell_color}; margin-top: 10px;">{swelling_power}</div>
+                    <div style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">POWER POINTS</div>
+                </div>
+                
+                <div style="text-align: center; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; margin-top: 15px;">
+                    <div style="font-size: 2.5rem; font-weight: 700; color: {swell_color};">{swelling}</div>
+                    <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">
+                        {get_swelling_status(swelling_value)}
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -148,8 +197,12 @@ def show_rom_pain():
             total_power_gain = extension_power + flexion_power + pain_power + swelling_power
             
             st.markdown(f"""
-            <div style="text-align: center; margin: 20px 0; padding: 15px; background-color: rgba(255, 204, 0, 0.1); border-radius: 10px;">
-                <h3>Total Power Gain: {total_power_gain:,} points</h3>
+            <div style="text-align: center; margin: 20px 0; padding: 20px; background: linear-gradient(135deg, rgba(54, 209, 220, 0.2), rgba(91, 134, 229, 0.2)); border-radius: 16px;">
+                <div style="font-size: 1rem; color: rgba(255,255,255,0.7); margin-bottom: 5px;">TOTAL POWER GAIN</div>
+                <div style="font-size: 3rem; font-weight: 700; color: #36d1dc; text-shadow: 0 0 10px rgba(54, 209, 220, 0.5);">
+                    {total_power_gain:,}
+                </div>
+                <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">POINTS</div>
             </div>
             """, unsafe_allow_html=True)
             
@@ -184,29 +237,28 @@ def show_rom_pain():
             st.session_state.power_level += total_power_gain
             st.session_state.show_power_up = True
             
-            # Super Saiyan animation (part of the power-up effect)
+            # Modern achievement box with animation
             st.markdown(f"""
-            <div style="text-align: center; margin: 20px 0; padding: 20px;">
-                <h2 style="color: #ffcc00; text-shadow: 0 0 10px #ffcc00;">MEASUREMENTS LOGGED!</h2>
-                <p>Your knee's power level increased by <span style="color: #ffcc00; font-weight: bold;">{total_power_gain:,}</span> points!</p>
+            <div class="achievement-box">
+                <h3 style="color: #36d1dc;">MEASUREMENTS LOGGED!</h3>
+                <p>Your knee's power level increased by <span style="color: #36d1dc; font-weight: bold;">{total_power_gain:,}</span> points!</p>
             </div>
             """, unsafe_allow_html=True)
             
             # Special messages based on achievement
             if extension_angle <= 0 and flexion_angle >= 130:
                 st.markdown("""
-                <div style="text-align: center; padding: 15px; background-color: rgba(255, 204, 0, 0.1); border-radius: 10px; margin: 20px 0;">
-                    <h3 style="color: #ffcc00;">ACHIEVEMENT UNLOCKED: NORMAL ROM!</h3>
+                <div class="achievement-box" style="background: linear-gradient(135deg, rgba(54, 209, 220, 0.2), rgba(54, 209, 220, 0.05));">
+                    <h3 style="color: #36d1dc;">ACHIEVEMENT UNLOCKED: NORMAL ROM!</h3>
                     <p>You've achieved normal knee range of motion! This is a significant milestone in your recovery!</p>
                 </div>
                 """, unsafe_allow_html=True)
             
             if pain_level <= 2 and swelling_value == 0:
                 st.markdown("""
-                <div style="text-align: center; padding: 15px; background-color: rgba(0, 191, 255, 0.1); border-radius: 10px; margin: 20px 0; border: 1px solid #00bfff;">
-                    <img src="app/images/goku_nobackground.gif" style="max-width: 120px; margin: 0 auto; display: block;">
-                    <h3 style="color: #00bfff;">Pain Resistance Mastered!</h3>
-                    <p>Your knee is showing incredible recovery potential!</p>
+                <div class="achievement-box" style="background: linear-gradient(135deg, rgba(91, 134, 229, 0.2), rgba(91, 134, 229, 0.05));">
+                    <h3 style="color: #5b86e5;">PAIN RESISTANCE MASTERED!</h3>
+                    <p>Your knee is showing incredible recovery potential with minimal pain and swelling!</p>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -218,204 +270,267 @@ def show_rom_pain():
         if not hasattr(st.session_state, 'rom_pain_log') or st.session_state.rom_pain_log.empty:
             st.info("No ROM or pain data recorded yet. Use the 'Log ROM & Pain' tab to start tracking.")
         else:
-            st.subheader("ROM & Pain History")
+            st.markdown("""
+            <div style="margin: 20px 0 10px 0;">
+                <h3 style="color: #36d1dc; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                    ROM & Pain History
+                </h3>
+            </div>
+            """, unsafe_allow_html=True)
             
             # Sort dataframe by date (most recent first)
             history_df = st.session_state.rom_pain_log.sort_values(by='date', ascending=False).copy()
             
-            # Display data table with delete buttons
-            for index, row in history_df.iterrows():
-                col1, col2, col3, col4, col5, col6 = st.columns([2, 2, 2, 2, 3, 1])
+            # Prepare for charts
+            if len(history_df) >= 2:
+                st.markdown('<div class="chart-container">', unsafe_allow_html=True)
                 
-                with col1:
-                    st.markdown(f"**{row['date']}**")
-                with col2:
-                    st.markdown(f"Extension: **{row['extension_angle']}°**")
-                with col3:
-                    st.markdown(f"Flexion: **{row['flexion_angle']}°**")
-                with col4:
-                    st.markdown(f"Pain: **{row['pain_level']}/10**")
-                with col5:
-                    swelling_levels = {0: "None", 1: "Minimal (+1)", 2: "Moderate (+2)", 3: "Severe (+3)"}
-                    swelling_text = swelling_levels.get(row['swelling'], "Unknown")
-                    st.markdown(f"Swelling: **{swelling_text}**")
-                with col6:
-                    if st.button("🗑️", key=f"delete_rom_{row['date']}"):
-                        if st.session_state.current_username:
-                            # Call MongoDB function to remove the entry
-                            success, message = remove_rom_pain_entry(st.session_state.current_username, row['date'])
-                            if success:
-                                # Also update the session state dataframe
-                                st.session_state.rom_pain_log = st.session_state.rom_pain_log[
-                                    st.session_state.rom_pain_log['date'] != row['date']
-                                ]
-                                st.success(message)
-                                st.rerun()
-                            else:
-                                st.error(message)
+                # Create charts row
+                chart_col1, chart_col2 = st.columns(2)
                 
-                # Display notes if available
-                if row['notes'] and not pd.isna(row['notes']) and row['notes'].strip():
-                    st.markdown(f"**Notes:** {row['notes']}")
-                
-                # Add a separator
-                st.markdown("---")
-            
-            # ROM Progress Chart
-            st.subheader("ROM Progress Chart")
-            
-            # Create a copy for plotting and ensure date is in datetime format
-            plot_df = history_df.copy()
-            plot_df['date'] = pd.to_datetime(plot_df['date'])
-            plot_df = plot_df.sort_values('date')  # Sort by date for the chart
-            
-            # Create ROM chart
-            fig_rom = px.line(
-                plot_df, 
-                x='date', 
-                y=['extension_angle', 'flexion_angle'],
-                labels={'value': 'Angle (degrees)', 'date': 'Date', 'variable': 'Measurement'},
-                title='ROM Progress Over Time',
-                markers=True,
-                color_discrete_map={
-                    'extension_angle': '#ff9900',  # Orange color for extension
-                    'flexion_angle': '#00ccff'     # Blue color for flexion
-                }
-            )
-            
-            # Customize the ROM chart
-            fig_rom.update_layout(
-                xaxis_title='Date',
-                yaxis_title='Angle (degrees)',
-                legend_title='Measurement',
-                hovermode='x unified',
-                template='plotly_dark',
-                height=500,
-            )
-            
-            st.plotly_chart(fig_rom, use_container_width=True)
-            
-            # Pain & Swelling Progress Chart
-            st.subheader("Pain & Swelling Progress Chart")
-            
-            # Create pain chart
-            fig_pain = px.line(
-                plot_df, 
-                x='date', 
-                y=['pain_level', 'swelling'],
-                labels={'value': 'Level', 'date': 'Date', 'variable': 'Measurement'},
-                title='Pain & Swelling Progress Over Time',
-                markers=True,
-                color_discrete_map={
-                    'pain_level': '#ff4500',      # Red color for pain
-                    'swelling': '#9966ff'        # Purple color for swelling
-                }
-            )
-            
-            # Customize the pain chart
-            fig_pain.update_layout(
-                xaxis_title='Date',
-                yaxis_title='Level',
-                legend_title='Measurement',
-                hovermode='x unified',
-                template='plotly_dark',
-                height=500,
-            )
-            
-            # For pain level, set y-axis range from 0 to 10
-            fig_pain.update_yaxes(range=[0, 10])
-            
-            st.plotly_chart(fig_pain, use_container_width=True)
-            
-            # ROM Trends Analysis
-            st.subheader("ROM Trends Analysis")
-            
-            if len(plot_df) >= 2:
-                # Calculate ROM improvements
-                first_extension = plot_df.iloc[0]['extension_angle']
-                last_extension = plot_df.iloc[-1]['extension_angle']
-                extension_improvement = first_extension - last_extension  # Lower is better for extension
-                
-                first_flexion = plot_df.iloc[0]['flexion_angle']
-                last_flexion = plot_df.iloc[-1]['flexion_angle']
-                flexion_improvement = last_flexion - first_flexion  # Higher is better for flexion
-                
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    st.metric(
-                        label="Extension Improvement", 
-                        value=f"{last_extension:.1f}°", 
-                        delta=f"{extension_improvement:.1f}°" if extension_improvement > 0 else f"{-extension_improvement:.1f}°",
-                        delta_color="normal" if extension_improvement > 0 else "inverse"
+                with chart_col1:
+                    # ROM progression chart
+                    fig_rom = go.Figure()
+                    
+                    # Convert dates for proper timeline
+                    history_df['date'] = pd.to_datetime(history_df['date'])
+                    plot_df = history_df.sort_values('date')
+                    
+                    # Add traces for extension and flexion
+                    fig_rom.add_trace(go.Scatter(
+                        x=plot_df['date'], 
+                        y=plot_df['extension_angle'],
+                        name='Extension',
+                        line=dict(color='#36d1dc', width=3),
+                        mode='lines+markers',
+                    ))
+                    
+                    fig_rom.add_trace(go.Scatter(
+                        x=plot_df['date'], 
+                        y=plot_df['flexion_angle'],
+                        name='Flexion',
+                        line=dict(color='#5b86e5', width=3),
+                        mode='lines+markers',
+                        yaxis="y2"
+                    ))
+                    
+                    # Create dual y-axis layout
+                    fig_rom.update_layout(
+                        title="ROM Progression",
+                        title_font_color="#36d1dc",
+                        plot_bgcolor='rgba(0,0,0,0)',
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        margin=dict(l=10, r=10, t=40, b=10),
+                        legend=dict(
+                            orientation="h",
+                            yanchor="bottom",
+                            y=1.02,
+                            xanchor="right",
+                            x=1,
+                            font=dict(color='rgba(255,255,255,0.7)')
+                        ),
+                        xaxis=dict(
+                            showgrid=False,
+                            zeroline=False,
+                            title="Date",
+                            color='rgba(255,255,255,0.5)'
+                        ),
+                        yaxis=dict(
+                            title="Extension (°)",
+                            showgrid=True,
+                            gridcolor='rgba(255,255,255,0.1)',
+                            zeroline=False,
+                            color='rgba(255,255,255,0.5)'
+                        ),
+                        yaxis2=dict(
+                            title="Flexion (°)",
+                            overlaying="y",
+                            side="right",
+                            showgrid=False,
+                            zeroline=False,
+                            color='rgba(255,255,255,0.5)'
+                        ),
+                        font=dict(color='rgba(255,255,255,0.7)'),
                     )
                     
-                with col2:
-                    st.metric(
-                        label="Flexion Improvement", 
-                        value=f"{last_flexion:.1f}°", 
-                        delta=f"{flexion_improvement:.1f}°",
-                        delta_color="normal" if flexion_improvement > 0 else "inverse"
+                    st.plotly_chart(fig_rom, use_container_width=True)
+                
+                with chart_col2:
+                    # Pain & Swelling chart
+                    fig_pain = go.Figure()
+                    
+                    # Add traces for pain and swelling
+                    fig_pain.add_trace(go.Scatter(
+                        x=plot_df['date'],
+                        y=plot_df['pain_level'],
+                        name='Pain Level',
+                        line=dict(color='#ff6b6b', width=3),
+                        mode='lines+markers',
+                    ))
+                    
+                    fig_pain.add_trace(go.Scatter(
+                        x=plot_df['date'],
+                        y=plot_df['swelling'],
+                        name='Swelling',
+                        line=dict(color='#ffab00', width=3),
+                        mode='lines+markers',
+                    ))
+                    
+                    # Format the chart
+                    fig_pain.update_layout(
+                        title="Pain & Swelling Trends",
+                        title_font_color="#36d1dc",
+                        plot_bgcolor='rgba(0,0,0,0)',
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        margin=dict(l=10, r=10, t=40, b=10),
+                        legend=dict(
+                            orientation="h",
+                            yanchor="bottom",
+                            y=1.02,
+                            xanchor="right",
+                            x=1,
+                            font=dict(color='rgba(255,255,255,0.7)')
+                        ),
+                        xaxis=dict(
+                            showgrid=False,
+                            zeroline=False,
+                            title="Date",
+                            color='rgba(255,255,255,0.5)'
+                        ),
+                        yaxis=dict(
+                            title="Level",
+                            showgrid=True,
+                            gridcolor='rgba(255,255,255,0.1)',
+                            zeroline=False,
+                            color='rgba(255,255,255,0.5)'
+                        ),
+                        font=dict(color='rgba(255,255,255,0.7)'),
                     )
+                    
+                    st.plotly_chart(fig_pain, use_container_width=True)
                 
-                # Calculate normal knee ROM achievement percentage
-                normal_extension_target = 0  # 0 degrees is normal extension
-                normal_flexion_target = 135  # 135 degrees is normal flexion
+                st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Display history as cards instead of a table
+            st.markdown('<div style="margin-top: 20px;">', unsafe_allow_html=True)
+            
+            for _, row in history_df.iterrows():
+                swelling_levels = {0: "None", 1: "Minimal (+1)", 2: "Moderate (+2)", 3: "Severe (+3)"}
+                swelling_text = swelling_levels.get(row['swelling'], "Unknown")
                 
-                extension_percentage = min(100, max(0, 100 - ((last_extension - normal_extension_target) / 5 * 100)))
-                flexion_percentage = min(100, max(0, (last_flexion / normal_flexion_target) * 100))
+                # Convert string date to datetime for formatting
+                date_obj = pd.to_datetime(row['date']) if not isinstance(row['date'], pd.Timestamp) else row['date']
+                formatted_date = date_obj.strftime("%B %d, %Y")
                 
-                # Calculate overall ROM achievement
-                overall_percentage = (extension_percentage + flexion_percentage) / 2
+                # ROM status indicators
+                ext_color = "#36d1dc" if row['extension_angle'] <= 0 else "#5b86e5" if row['extension_angle'] <= 10 else "#ff6b6b"
+                flex_color = "#ff6b6b" if row['flexion_angle'] < 90 else "#5b86e5" if row['flexion_angle'] < 120 else "#36d1dc"
+                pain_color = "#36d1dc" if row['pain_level'] <= 3 else "#5b86e5" if row['pain_level'] <= 6 else "#ff6b6b"
+                swell_color = "#36d1dc" if row['swelling'] <= 1 else "#5b86e5" if row['swelling'] <= 2 else "#ff6b6b"
                 
+                # Card UI
                 st.markdown(f"""
-                <div style="margin: 20px 0; padding: 20px; background-color: rgba(0,0,0,0.2); border-radius: 10px;">
-                    <h4 style="text-align: center;">Overall ROM Achievement: {overall_percentage:.1f}%</h4>
-                    <div style="background-color: rgba(0,0,0,0.3); border-radius: 5px; height: 30px; width: 100%; margin-top: 10px;">
-                        <div style="background-image: linear-gradient(90deg, #ff4500, #ffcc00, #00cc00); 
-                                  width: {overall_percentage}%; 
-                                  height: 100%; 
-                                  border-radius: 5px;">
+                <div class="fitness-card" style="margin-bottom: 15px; position: relative;">
+                    <div style="position: absolute; right: 15px; top: 15px;">
+                        <button onclick="alert('To delete this entry, use the delete button below.')" 
+                                style="background: none; border: none; cursor: pointer; color: #ff6b6b; font-size: 18px;">
+                            🗑️
+                        </button>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <span style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">DATE</span>
+                        <div style="font-weight: 600; color: #36d1dc; font-size: 1.2rem;">{formatted_date}</div>
+                    </div>
+                    
+                    <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 15px;">
+                        <div style="flex: 1; min-width: 120px;">
+                            <span style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">EXTENSION</span>
+                            <div style="font-weight: 600; color: {ext_color}; font-size: 1.5rem;">{row['extension_angle']}°</div>
+                        </div>
+                        
+                        <div style="flex: 1; min-width: 120px;">
+                            <span style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">FLEXION</span>
+                            <div style="font-weight: 600; color: {flex_color}; font-size: 1.5rem;">{row['flexion_angle']}°</div>
+                        </div>
+                        
+                        <div style="flex: 1; min-width: 120px;">
+                            <span style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">PAIN</span>
+                            <div style="font-weight: 600; color: {pain_color}; font-size: 1.5rem;">{row['pain_level']}/10</div>
+                        </div>
+                        
+                        <div style="flex: 1; min-width: 120px;">
+                            <span style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">SWELLING</span>
+                            <div style="font-weight: 600; color: {swell_color}; font-size: 1.2rem;">{swelling_text}</div>
                         </div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 5px;">
-                        <span>0%</span>
-                        <span>50%</span>
-                        <span>100%</span>
-                    </div>
+                    
+                    {f'<div style="font-style: italic; color: rgba(255,255,255,0.7); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">{row["notes"]}</div>' if row["notes"] else ''}
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Recovery phase recommendations based on ROM
-                st.subheader("Recovery Phase Recommendations")
-                
-                rehab_tips = []
-                
-                # Extension recommendations
-                if last_extension > 10:
-                    rehab_tips.append("❗ **Prioritize extension exercises** - Your extension is limited above 10°. Focus on achieving full extension with exercises like prone hangs and heel props.")
-                elif last_extension > 5:
-                    rehab_tips.append("⚠️ **Continue extension work** - You're progressing but still need to work on achieving full extension (0°). Try passive extension stretches.")
-                elif last_extension > 0:
-                    rehab_tips.append("✅ **Extension is good** - You're approaching normal extension. Keep maintaining with regular stretching.")
-                else:
-                    rehab_tips.append("🌟 **Extension is excellent** - You've achieved full or hyperextension. Keep maintaining this ROM.")
-                
-                # Flexion recommendations
-                if last_flexion < 90:
-                    rehab_tips.append("❗ **Focus on flexion exercises** - Your flexion is below 90°. This is a priority to improve function. Try heel slides, wall slides, and assisted flexion exercises.")
-                elif last_flexion < 120:
-                    rehab_tips.append("⚠️ **Continue flexion work** - You have functional flexion but need to keep improving. Try seated heel slides and gentle gym ball rolling.")
-                elif last_flexion < 135:
-                    rehab_tips.append("✅ **Flexion is good** - You're approaching normal flexion. Continue with regular stretching to achieve full ROM.")
-                else:
-                    rehab_tips.append("🌟 **Flexion is excellent** - You've achieved normal flexion. Focus on maintaining this ROM.")
-                
-                for tip in rehab_tips:
-                    st.markdown(tip)
-                
-                # Show reference values
-                st.info("📊 **Reference Values:** Normal knee ROM is 0° extension (or slight hyperextension) and 135-150° flexion.")
-                
-            else:
-                st.info("Not enough data points to analyze trends. Log more ROM measurements to see your progress analysis.")
+                # Add a real delete button below each card for functionality
+                if st.button("Delete This Entry", key=f"delete_rom_{row['date']}"):
+                    if st.session_state.current_username:
+                        # Call MongoDB function to remove the entry
+                        success = remove_rom_pain_entry(st.session_state.current_username, row['date'])
+                        if success:
+                            # Also update the session state dataframe
+                            st.session_state.rom_pain_log = st.session_state.rom_pain_log[
+                                st.session_state.rom_pain_log['date'] != row['date']
+                            ]
+                            st.success(f"Entry from {formatted_date} deleted successfully!")
+                            st.rerun()
+                        else:
+                            st.error("Failed to delete entry. Please try again.")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+
+# Helper functions for status text
+def get_extension_status(angle):
+    if angle < 0:
+        return "Excellent (Hyperextension)"
+    elif angle == 0:
+        return "Full Extension"
+    elif angle <= 5:
+        return "Good"
+    elif angle <= 10:
+        return "Moderate"
+    else:
+        return "Needs Improvement"
+
+def get_flexion_status(angle):
+    if angle >= 135:
+        return "Excellent"
+    elif angle >= 120:
+        return "Very Good"
+    elif angle >= 100:
+        return "Good"
+    elif angle >= 90:
+        return "Fair"
+    else:
+        return "Needs Improvement"
+
+def get_pain_status(level):
+    if level == 0:
+        return "None"
+    elif level <= 2:
+        return "Minimal"
+    elif level <= 4:
+        return "Mild"
+    elif level <= 6:
+        return "Moderate"
+    elif level <= 8:
+        return "Severe"
+    else:
+        return "Extreme"
+
+def get_swelling_status(level):
+    if level == 0:
+        return "None"
+    elif level == 1:
+        return "Minimal"
+    elif level == 2:
+        return "Moderate"
+    else:
+        return "Severe"

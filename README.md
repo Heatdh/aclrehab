@@ -13,48 +13,30 @@ A comprehensive web application for tracking your ACL rehabilitation progress. B
 - **Rehabilitation Plan**: Comprehensive phase-by-phase ACL recovery protocol
 - **Equipment & Exercises**: Database of exercises organized by category
 
-## Modern UI
+## Modern UI Design
 
-The application features a modern, card-based UI with:
-- Responsive fitness-themed layout
-- Progress metrics with visual indicators
-- Achievement cards for motivation
-- Interactive exercise history
-- Modern color scheme and animations
+The application features a modern, fitness-oriented design with:
 
-## Setup Instructions
+- **Card-Based Layout**: Clean, organized information presentation
+- **Interactive Charts**: Visual progress tracking with dynamic data visualization
+- **Progress Metrics**: Clear display of rehabilitation milestones
+- **Achievement System**: Gamified elements to encourage consistent tracking
+- **Custom Styling**: Modern color scheme and visual elements
+- **Responsive Design**: Works well on different screen sizes
+
+## Getting Started
 
 1. Clone this repository
-2. Create a virtual environment:
-   ```
-   python -m venv stream
-   ```
-3. Activate the environment:
-   - Windows: `stream\Scripts\activate`
-   - Mac/Linux: `source stream/bin/activate`
-4. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-5. Run the application:
-   ```
-   streamlit run app.py
-   ```
+2. Install dependencies with: `pip install -r requirements.txt`
+3. Run the application: `streamlit run app.py`
+4. Create a user profile and start tracking your rehabilitation
 
-## Data Storage
+## Technologies Used
 
-The app stores data in CSV files by default. MongoDB integration is available but optional.
-
-## Requirements
-
-- Python 3.7+
-- Streamlit
-- Pandas
-- NumPy
-- Plotly
-- Matplotlib
-- Streamlit Option Menu
-
-## License
+- Streamlit: Frontend framework
+- Pandas: Data processing
+- Plotly: Interactive data visualization
+- Python: Backend logic
+- CSS: Custom styling
 
 MIT License 
