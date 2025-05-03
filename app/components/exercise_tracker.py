@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from db_utils import remove_exercise_entry
+import base64
+import plotly.express as px
 
 def show_exercise_tracker():
     st.title("Exercise Tracker")
@@ -203,37 +205,44 @@ def show_exercise_tracker():
         st.markdown("""
         <style>
         .exercise-category {
-            background: linear-gradient(90deg, rgba(255,204,0,0.2) 0%, rgba(0,0,0,0) 100%);
-            border-left: 3px solid #ffcc00;
+            background: linear-gradient(90deg, rgba(54, 209, 220, 0.2) 0%, rgba(0,0,0,0) 100%);
+            border-left: 3px solid #36d1dc;
             padding-left: 10px;
             margin: 5px 0;
-            font-weight: bold;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
         </style>
         """, unsafe_allow_html=True)
         
-        st.markdown("<div class='exercise-category'>Select your Super Saiyan training:</div>", unsafe_allow_html=True)
+        st.markdown("<div class='exercise-category'>SELECT YOUR TRAINING EXERCISE</div>", unsafe_allow_html=True)
         
         # Initialize session state for exercise category if it doesn't exist
         if 'selected_category' not in st.session_state:
             st.session_state.selected_category = list(exercise_categories.keys())[0]
         
-        # Category selection outside the form
-        selected_category = st.selectbox(
-            "Exercise Category", 
-            options=list(exercise_categories.keys()),
-            index=list(exercise_categories.keys()).index(st.session_state.selected_category),
-            key="category_selector"
-        )
-        
-        # Update session state with the new category
-        st.session_state.selected_category = selected_category
-        
-        # Get exercises for the selected category
-        available_exercises = exercise_categories[selected_category]
-        
-        # Add a search box to filter exercises
-        search_term = st.text_input("🔍 Search exercises", value="", placeholder="Type to search...", key="search_term")
+        # Create a modern card layout for category selection
+        with st.container():
+            st.markdown('<div class="fitness-card">', unsafe_allow_html=True)
+            
+            # Category selection outside the form
+            selected_category = st.selectbox(
+                "Exercise Category", 
+                options=list(exercise_categories.keys()),
+                index=list(exercise_categories.keys()).index(st.session_state.selected_category),
+                key="category_selector"
+            )
+            
+            # Update session state with the new category
+            st.session_state.selected_category = selected_category
+            
+            # Get exercises for the selected category
+            available_exercises = exercise_categories[selected_category]
+            
+            # Add a search box to filter exercises
+            search_term = st.text_input("🔍 Search exercises", value="", placeholder="Type to search...", key="search_term")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
         
         # Filter exercises based on search term
         if search_term:
@@ -248,42 +257,61 @@ def show_exercise_tracker():
             # Initialize or reset if not valid in current category
             st.session_state.selected_exercise = available_exercises[0] if available_exercises else ""
         
-        # Exercise selection outside of form
-        selected_exercise = st.selectbox(
-            "Select Exercise", 
-            options=available_exercises,
-            index=available_exercises.index(st.session_state.selected_exercise) if st.session_state.selected_exercise in available_exercises else 0,
-            key=f"exercise_selector_{selected_category}_{search_term}"
-        )
-        
-        # Update session state with selected exercise
-        st.session_state.selected_exercise = selected_exercise
-        
-        # Display exercise description outside the form
-        if selected_exercise in exercise_descriptions:
-            st.markdown(f"""
-            <div style="background-color: rgba(255, 204, 0, 0.1); border-left: 3px solid #ffcc00; padding: 10px; margin: 10px 0; border-radius: 5px;">
-                <span style="font-weight: bold;">❓ How to perform:</span> {exercise_descriptions[selected_exercise]}
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown(f"""
-            <div style="background-color: rgba(255, 204, 0, 0.1); border-left: 3px solid #ffcc00; padding: 10px; margin: 10px 0; border-radius: 5px;">
-                <span style="font-weight: bold;">⚠️ Exercise Description:</span> Perform this exercise with controlled movements focusing on proper form. If you're unsure how to perform it correctly, consult with your physical therapist.
-            </div>
-            """, unsafe_allow_html=True)
+        # Exercise selection with modern card design
+        with st.container():
+            st.markdown('<div class="fitness-card">', unsafe_allow_html=True)
+            
+            # Exercise selection outside of form
+            selected_exercise = st.selectbox(
+                "Select Exercise", 
+                options=available_exercises,
+                index=available_exercises.index(st.session_state.selected_exercise) if st.session_state.selected_exercise in available_exercises else 0,
+                key=f"exercise_selector_{selected_category}_{search_term}"
+            )
+            
+            # Update session state with selected exercise
+            st.session_state.selected_exercise = selected_exercise
+            
+            # Display exercise description with modern styling
+            if selected_exercise in exercise_descriptions:
+                st.markdown(f"""
+                <div style="background: linear-gradient(90deg, rgba(54, 209, 220, 0.1), rgba(54, 209, 220, 0.02)); 
+                            border-left: 3px solid #36d1dc; 
+                            padding: 15px; 
+                            margin: 15px 0; 
+                            border-radius: 8px;">
+                    <span style="font-weight: 600; color: #36d1dc;">How to perform:</span> {exercise_descriptions[selected_exercise]}
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div style="background: linear-gradient(90deg, rgba(255, 171, 0, 0.1), rgba(255, 171, 0, 0.02)); 
+                            border-left: 3px solid #ffab00; 
+                            padding: 15px; 
+                            margin: 15px 0; 
+                            border-radius: 8px;">
+                    <span style="font-weight: 600; color: #ffab00;">Exercise Description:</span> Perform this exercise with controlled movements focusing on proper form. If you're unsure how to perform it correctly, consult with your physical therapist.
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.markdown('</div>', unsafe_allow_html=True)
         
         # Now create the form with the pre-selected category and exercise
         with st.form("exercise_form"):
-            st.markdown('<div class="css-card">', unsafe_allow_html=True)
+            st.markdown('<div class="fitness-card">', unsafe_allow_html=True)
             
             # Date picker defaulted to today
             exercise_date = st.date_input("Date", value=datetime.today())
             
             # Display the selected category and exercise (hidden input field to get the values in the form submission)
-            st.markdown(f"<div style='font-weight: bold; color: #ffcc00;'>{selected_category} - {selected_exercise}</div>", unsafe_allow_html=True)
+            st.markdown(f"""
+            <div style="margin-bottom: 15px;">
+                <span style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">SELECTED EXERCISE</span>
+                <div style="font-weight: 600; color: #36d1dc; font-size: 1.1rem;">{selected_category} - {selected_exercise}</div>
+            </div>
+            """, unsafe_allow_html=True)
             
-            # Exercise details
+            # Exercise details with better layout
             col1, col2 = st.columns(2)
             with col1:
                 sets = st.number_input("Sets", min_value=1, max_value=10, value=3)
@@ -351,183 +379,291 @@ def show_exercise_tracker():
                 st.session_state.power_level += power_gain
                 st.session_state.show_power_up = True
                 
-                # Power-up animation 
-                st.markdown(f"""
-                <div style="text-align: center; margin: 20px 0;">
-                    <img src="app/images/goku_pose.gif" style="max-width: 200px; margin: 0 auto; display: block;">
-                    <h3 style="color: #ffcc00;">EXERCISE COMPLETE!</h3>
-                    <p>Power level increased by <span style="color: #ffcc00; font-weight: bold;">{power_gain}</span> points!</p>
-                </div>
-                """, unsafe_allow_html=True)
+                # Get base64 encoded GIF image for inline display
+                try:
+                    with open("app/images/goku_pose.gif", "rb") as f:
+                        gif_data = f.read()
+                        encoded_gif = base64.b64encode(gif_data).decode()
+                    
+                    # Power-up animation with inline GIF
+                    st.markdown(f"""
+                    <div class="achievement-box">
+                        <img src="data:image/gif;base64,{encoded_gif}" style="max-width: 200px; margin: 0 auto; display: block; border-radius: 12px; box-shadow: 0 0 20px rgba(54, 209, 220, 0.4);">
+                        <h3 style="color: #36d1dc; margin-top: 15px;">EXERCISE COMPLETE!</h3>
+                        <p>Power level increased by <span style="color: #36d1dc; font-weight: 600;">{power_gain}</span> points!</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                except Exception as e:
+                    # Fallback if GIF loading fails
+                    st.markdown(f"""
+                    <div class="achievement-box">
+                        <h3 style="color: #36d1dc;">EXERCISE COMPLETE!</h3>
+                        <p>Power level increased by <span style="color: #36d1dc; font-weight: 600;">{power_gain}</span> points!</p>
+                    </div>
+                    """, unsafe_allow_html=True)
                 
                 # Show success message
                 st.success(f"Exercise logged successfully! Power level increased to {st.session_state.power_level:,}!")
             except Exception as e:
                 st.error(f"Error updating power level: {e}")
             
-            # Special messages based on power level milestones
-            if st.session_state.power_level > 9000:
-                st.markdown("""
-                <div style="text-align: center; padding: 20px; background-color: rgba(255, 204, 0, 0.1); border-radius: 10px; margin: 20px 0;">
-                    <img src="app/images/power_app_animation.gif" style="max-width: 150px; margin: 0 auto; display: block;">
-                    <h3 style="color: #ffcc00;">IT'S OVER 9000!!!</h3>
-                    <p>Your power level is rising exponentially!</p>
-                </div>
-                """, unsafe_allow_html=True)
+            # Special messages based on power level milestones with base64 encoded GIFs
+            try:
+                with open("app/images/power_app_animation.gif", "rb") as f:
+                    power_gif = base64.b64encode(f.read()).decode()
                 
-            if st.session_state.power_level > 20000:
-                st.markdown("""
-                <div style="text-align: center; padding: 20px; background-color: rgba(255, 204, 0, 0.1); border-radius: 10px; margin: 20px 0;">
-                    <img src="app/images/goku_pose.gif" style="max-width: 150px; margin: 0 auto; display: block;">
-                    <h3 style="color: #ffcc00;">Super Saiyan Level Achieved!</h3>
-                    <p>Your knee has transformed to its next level!</p>
-                </div>
-                """, unsafe_allow_html=True)
+                with open("app/images/goku_pose.gif", "rb") as f:
+                    goku_gif = base64.b64encode(f.read()).decode()
+                    
+                with open("app/images/goku_nobackground.gif", "rb") as f:
+                    goku_blue_gif = base64.b64encode(f.read()).decode()
                 
-            if st.session_state.power_level > 50000:
-                st.markdown("""
-                <div style="text-align: center; padding: 20px; background-color: rgba(0, 191, 255, 0.1); border-radius: 10px; margin: 20px 0; border: 1px solid #00bfff;">
-                    <img src="app/images/goku_nobackground.gif" style="max-width: 150px; margin: 0 auto; display: block;">
-                    <h3 style="color: #00bfff;">Super Saiyan Blue Achieved!</h3>
-                    <p>Your dedication has reached divine levels!</p>
-                </div>
-                """, unsafe_allow_html=True)
-                
-            if st.session_state.power_level > 100000:
-                st.markdown("""
-                <div style="text-align: center; padding: 20px; background-color: rgba(128, 0, 128, 0.1); border-radius: 10px; margin: 20px 0; border: 1px solid #800080;">
-                    <img src="app/images/power_app_animation.gif" style="max-width: 150px; margin: 0 auto; display: block;">
-                    <h3 style="color: #800080;">Ultra Instinct Unlocked!</h3>
-                    <p>Your knee now moves without conscious thought!</p>
-                </div>
-                """, unsafe_allow_html=True)
-    
-    with tab2:
-        if not hasattr(st.session_state, 'exercise_log') or st.session_state.exercise_log.empty:
-            st.info("No exercises logged yet. Start tracking your workouts to see your history!")
-        else:
-            st.markdown('<div class="css-card">', unsafe_allow_html=True)
-            
-            # Convert date strings to datetime
-            st.session_state.exercise_log['date'] = pd.to_datetime(st.session_state.exercise_log['date'])
-            
-            # Date filter for history
-            date_range = st.date_input(
-                "Filter by date range",
-                value=(
-                    st.session_state.exercise_log['date'].min().date(),
-                    st.session_state.exercise_log['date'].max().date()
-                ),
-                key="exercise_date_filter"
-            )
-            
-            # Filter dataframe by date range
-            filtered_log = st.session_state.exercise_log
-            if len(date_range) == 2:
-                start_date, end_date = date_range
-                mask = (filtered_log['date'].dt.date >= start_date) & (filtered_log['date'].dt.date <= end_date)
-                filtered_log = filtered_log.loc[mask]
-            
-            # Group by date
-            grouped = filtered_log.groupby(filtered_log['date'].dt.date)
-            
-            # Calculate training statistics
-            total_exercises = len(filtered_log)
-            total_sets = filtered_log['sets'].sum()
-            total_volume = (filtered_log['sets'] * filtered_log['reps'] * filtered_log['weight']).sum()
-            
-            # Display stats
-            st.markdown(f"""
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h3>Training Statistics</h3>
-                <div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
-                    <div style="min-width: 150px; margin: 10px; padding: 15px; background-color: rgba(0,0,0,0.2); border-radius: 10px; text-align: center;">
-                        <h4 style="margin: 0;">Exercises</h4>
-                        <p style="font-size: 24px; margin: 10px 0; color: #ffcc00;">{total_exercises}</p>
-                    </div>
-                    <div style="min-width: 150px; margin: 10px; padding: 15px; background-color: rgba(0,0,0,0.2); border-radius: 10px; text-align: center;">
-                        <h4 style="margin: 0;">Total Sets</h4>
-                        <p style="font-size: 24px; margin: 10px 0; color: #ffcc00;">{total_sets}</p>
-                    </div>
-                    <div style="min-width: 150px; margin: 10px; padding: 15px; background-color: rgba(0,0,0,0.2); border-radius: 10px; text-align: center;">
-                        <h4 style="margin: 0;">Volume (kg)</h4>
-                        <p style="font-size: 24px; margin: 10px 0; color: #ffcc00;">{total_volume:.1f}</p>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-            # Display exercises by date
-            for date, group in grouped:
-                with st.expander(f"**{date.strftime('%A, %B %d, %Y')}** - {len(group)} exercises"):
-                    # Add category filter if there are multiple categories
-                    categories_in_group = group['category'].unique() if 'category' in group.columns else []
-                    
-                    if len(categories_in_group) > 1:
-                        selected_cat = st.selectbox(
-                            "Filter by category", 
-                            options=["All Categories"] + list(categories_in_group),
-                            key=f"cat_filter_{date}"
-                        )
-                        
-                        if selected_cat != "All Categories":
-                            display_group = group[group['category'] == selected_cat]
-                        else:
-                            display_group = group
-                    else:
-                        display_group = group
-                    
-                    # Display each exercise with a delete button
-                    for idx, row in display_group.iterrows():
-                        col1, col2, col3, col4, col5, col6 = st.columns([3, 1, 1, 1, 3, 1])
-                        
-                        with col1:
-                            if 'category' in row:
-                                st.markdown(f"**{row['exercise']}** ({row['category']})")
-                            else:
-                                st.markdown(f"**{row['exercise']}**")
-                        
-                        with col2:
-                            st.markdown(f"Sets: **{row['sets']}**")
-                        
-                        with col3:
-                            st.markdown(f"Reps: **{row['reps']}**")
-                        
-                        with col4:
-                            st.markdown(f"Weight: **{row['weight']} kg**")
-                        
-                        with col5:
-                            if row['notes'] and not pd.isna(row['notes']) and row['notes'].strip():
-                                st.markdown(f"*{row['notes']}*")
-                        
-                        with col6:
-                            # Convert datetime to string format for MongoDB query
-                            date_str = row['date'].strftime('%Y-%m-%d')
-                            if st.button("🗑️", key=f"delete_exercise_{date_str}_{row['exercise']}"):
-                                if st.session_state.current_username:
-                                    # Call MongoDB function to remove the entry
-                                    success, message = remove_exercise_entry(st.session_state.current_username, date_str, row['exercise'])
-                                    if success:
-                                        # Also update the session state dataframe
-                                        st.session_state.exercise_log = st.session_state.exercise_log[
-                                            ~((st.session_state.exercise_log['date'] == row['date']) & 
-                                              (st.session_state.exercise_log['exercise'] == row['exercise']))
-                                        ]
-                                        st.success(message)
-                                        st.rerun()
-                                    else:
-                                        st.error(message)
-                        
-                        # Add a separator between exercises
-                        st.markdown("---")
-                    
-                    # Calculate the day's power level gain
-                    day_volume = (display_group['sets'] * display_group['reps'] * (1 + display_group['weight']/10)).sum()
-                    
+                if st.session_state.power_level > 9000:
                     st.markdown(f"""
-                    <div style="text-align: right; font-style: italic; color: #ffcc00;">
-                        Day's training volume: {day_volume:.1f} | Power gain: ~{int(day_volume * 1.5):,} points
+                    <div class="achievement-box">
+                        <img src="data:image/gif;base64,{power_gif}" style="max-width: 150px; margin: 0 auto; display: block; border-radius: 12px; box-shadow: 0 0 20px rgba(54, 209, 220, 0.4);">
+                        <h3 style="color: #36d1dc;">OUTSTANDING PROGRESS!</h3>
+                        <p>Your recovery is accelerating rapidly!</p>
                     </div>
                     """, unsafe_allow_html=True)
+                    
+                if st.session_state.power_level > 20000:
+                    st.markdown(f"""
+                    <div class="achievement-box">
+                        <img src="data:image/gif;base64,{goku_gif}" style="max-width: 150px; margin: 0 auto; display: block; border-radius: 12px; box-shadow: 0 0 20px rgba(54, 209, 220, 0.4);">
+                        <h3 style="color: #36d1dc;">ADVANCED LEVEL ACHIEVED!</h3>
+                        <p>Your knee rehabilitation has reached a new stage!</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                if st.session_state.power_level > 50000:
+                    st.markdown(f"""
+                    <div class="achievement-box" style="background: linear-gradient(135deg, rgba(20, 30, 48, 0.6), rgba(20, 25, 35, 0.6));">
+                        <img src="data:image/gif;base64,{goku_blue_gif}" style="max-width: 150px; margin: 0 auto; display: block; border-radius: 12px; box-shadow: 0 0 20px rgba(91, 134, 229, 0.4);">
+                        <h3 style="color: #5b86e5;">ELITE LEVEL ACHIEVED!</h3>
+                        <p>Your dedication has reached professional levels!</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                if st.session_state.power_level > 100000:
+                    st.markdown(f"""
+                    <div class="achievement-box" style="background: linear-gradient(135deg, rgba(25, 20, 45, 0.6), rgba(20, 15, 35, 0.6));">
+                        <img src="data:image/gif;base64,{power_gif}" style="max-width: 150px; margin: 0 auto; display: block; border-radius: 12px; box-shadow: 0 0 20px rgba(147, 112, 219, 0.4);">
+                        <h3 style="color: #9370db;">MASTER LEVEL ACHIEVED!</h3>
+                        <p>You've reached the pinnacle of rehabilitation excellence!</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+            except Exception as e:
+                # Fallback if GIF loading fails
+                if st.session_state.power_level > 9000:
+                    st.success("OUTSTANDING PROGRESS! Your recovery is accelerating rapidly!")
+                if st.session_state.power_level > 20000:
+                    st.success("ADVANCED LEVEL ACHIEVED! Your knee rehabilitation has reached a new stage!")
+                if st.session_state.power_level > 50000:
+                    st.success("ELITE LEVEL ACHIEVED! Your dedication has reached professional levels!")
+                if st.session_state.power_level > 100000:
+                    st.success("MASTER LEVEL ACHIEVED! You've reached the pinnacle of rehabilitation excellence!")
+    
+    with tab2:
+        # Improve history display with modern card layout
+        st.markdown('<div class="fitness-card">', unsafe_allow_html=True)
+        st.subheader("Exercise History")
+        
+        # Additional filtering options
+        col1, col2 = st.columns(2)
+        with col1:
+            filter_category = st.selectbox(
+                "Filter by Category", 
+                options=["All Categories"] + list(exercise_categories.keys()),
+                key="filter_category"
+            )
+        with col2:
+            filter_date = st.date_input(
+                "Filter by Date", 
+                value=None,
+                key="filter_date"
+            )
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Check if there's any exercise data
+        if st.session_state.exercise_log is not None and not st.session_state.exercise_log.empty:
+            # Convert to DataFrame if it's a dictionary
+            if isinstance(st.session_state.exercise_log, dict):
+                exercise_log_df = pd.DataFrame(st.session_state.exercise_log)
+            else:
+                exercise_log_df = st.session_state.exercise_log.copy()
+            
+            # Apply filters
+            if filter_category != "All Categories":
+                exercise_log_df = exercise_log_df[exercise_log_df['category'] == filter_category]
+            
+            if filter_date is not None:
+                filter_date_str = filter_date.strftime("%Y-%m-%d")
+                exercise_log_df = exercise_log_df[exercise_log_df['date'] == filter_date_str]
+            
+            # Sort by date (most recent first)
+            if 'date' in exercise_log_df.columns and not exercise_log_df.empty:
+                try:
+                    exercise_log_df['date'] = pd.to_datetime(exercise_log_df['date'])
+                    exercise_log_df = exercise_log_df.sort_values(by='date', ascending=False)
+                    # Convert back to string for display
+                    exercise_log_df['date'] = exercise_log_df['date'].dt.strftime("%Y-%m-%d")
+                except Exception as e:
+                    st.warning(f"Could not sort by date: {e}")
+            
+            # Show data in a modern format
+            if not exercise_log_df.empty:
+                # Display exercises in card format instead of table
+                st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+                
+                # Group by date for better organization
+                exercise_log_df['date'] = pd.to_datetime(exercise_log_df['date'])
+                grouped = exercise_log_df.groupby(exercise_log_df['date'].dt.strftime('%Y-%m-%d'))
+                
+                for date, group in grouped:
+                    st.markdown(f'<h4 style="color: #36d1dc; margin-top: 20px;">{date}</h4>', unsafe_allow_html=True)
+                    
+                    for _, row in group.iterrows():
+                        st.markdown(f"""
+                        <div class="exercise-card">
+                            <h4>{row['exercise']}</h4>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <div><span style="color: rgba(255,255,255,0.6);">Category:</span> {row['category']}</div>
+                                <div><span style="color: rgba(255,255,255,0.6);">Sets:</span> {row['sets']}</div>
+                                <div><span style="color: rgba(255,255,255,0.6);">Reps:</span> {row['reps']}</div>
+                                <div><span style="color: rgba(255,255,255,0.6);">Weight:</span> {row['weight']} kg</div>
+                            </div>
+                            <div style="font-style: italic; color: rgba(255,255,255,0.8);">{row['notes'] if 'notes' in row and row['notes'] else "No notes"}</div>
+                            <div style="text-align: right; margin-top: 10px;">
+                                <a style="color: #ff6b6b; cursor: pointer; text-decoration: none;" 
+                                   onclick="this.closest('.exercise-card').style.display='none'; parent.postMessage({{'type': 'streamlit:deleteExercise', 'date': '{date}', 'exercise': '{row['exercise']}'}}, '*')">
+                                   Delete
+                                </a>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Add JavaScript to handle deletion (not directly functional, would need backend integration)
+                st.markdown("""
+                <script>
+                // This is just a placeholder. Streamlit's sandboxed iframe prevents this from working directly.
+                // Would need custom components for full functionality
+                </script>
+                """, unsafe_allow_html=True)
+                
+                # Add a delete button that uses Streamlit's state management instead
+                with st.expander("Delete Exercise Entry"):
+                    # Get unique dates and exercises for deletion options
+                    dates = exercise_log_df['date'].dt.strftime('%Y-%m-%d').unique().tolist()
+                    
+                    delete_date = st.selectbox("Select Date", options=dates, key="delete_date")
+                    
+                    # Filter exercises by selected date
+                    filtered_exercises = exercise_log_df[exercise_log_df['date'].dt.strftime('%Y-%m-%d') == delete_date]['exercise'].unique().tolist()
+                    
+                    delete_exercise = st.selectbox("Select Exercise", options=filtered_exercises, key="delete_exercise")
+                    
+                    if st.button("Delete Entry", key="delete_button"):
+                        # Call the function to remove the exercise entry
+                        success = remove_exercise_entry(st.session_state.current_username, delete_date, delete_exercise)
+                        if success:
+                            st.success(f"Deleted {delete_exercise} entry from {delete_date}")
+                            # Update the session state exercise log
+                            st.session_state.exercise_log = get_exercise_log(st.session_state.current_username)
+                            st.rerun()
+                        else:
+                            st.error("Failed to delete exercise entry")
+            else:
+                st.info("No exercise records found matching your filters.")
+        else:
+            st.info("No exercise records found. Start logging your exercises to track your progress!")
+
+        # Add summary metrics in card layout
+        if st.session_state.exercise_log is not None and not st.session_state.exercise_log.empty:
+            try:
+                # Convert to DataFrame if it's a dictionary
+                if isinstance(st.session_state.exercise_log, dict):
+                    summary_df = pd.DataFrame(st.session_state.exercise_log)
+                else:
+                    summary_df = st.session_state.exercise_log.copy()
+                
+                # Create proper date column
+                summary_df['date'] = pd.to_datetime(summary_df['date'])
+                
+                # Calculate metrics
+                total_workouts = len(summary_df['date'].unique())
+                total_exercises = len(summary_df)
+                most_common_exercise = summary_df['exercise'].value_counts().idxmax() if not summary_df.empty else "None"
+                most_recent_date = summary_df['date'].max().strftime("%Y-%m-%d") if not summary_df.empty else "None"
+                
+                # Create a summary metrics row
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.markdown('<div class="metric-container">', unsafe_allow_html=True)
+                    st.markdown(f'<div class="metric-label">TOTAL WORKOUTS</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="metric-value">{total_workouts}</div>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                with col2:
+                    st.markdown('<div class="metric-container">', unsafe_allow_html=True)
+                    st.markdown(f'<div class="metric-label">TOTAL EXERCISES</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="metric-value">{total_exercises}</div>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                with col3:
+                    st.markdown('<div class="metric-container">', unsafe_allow_html=True)
+                    st.markdown(f'<div class="metric-label">FAVORITE EXERCISE</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="metric-value" style="font-size: 1.5rem;">{most_common_exercise}</div>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                with col4:
+                    st.markdown('<div class="metric-container">', unsafe_allow_html=True)
+                    st.markdown(f'<div class="metric-label">LAST WORKOUT</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="metric-value" style="font-size: 1.5rem;">{most_recent_date}</div>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Add workout frequency chart
+                st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+                st.subheader("Workout Frequency")
+                
+                # Create chart data
+                workout_dates = summary_df['date'].dt.strftime('%Y-%m-%d').value_counts().reset_index()
+                workout_dates.columns = ['date', 'count']
+                workout_dates['date'] = pd.to_datetime(workout_dates['date'])
+                workout_dates = workout_dates.sort_values('date')
+                
+                # Create a date range including all days
+                if not workout_dates.empty:
+                    date_range = pd.date_range(start=workout_dates['date'].min(), end=workout_dates['date'].max())
+                    all_dates = pd.DataFrame({'date': date_range})
+                    
+                    # Merge with actual workout dates
+                    merged_dates = all_dates.merge(workout_dates, on='date', how='left').fillna(0)
+                    
+                    # Plot
+                    fig = px.bar(
+                        merged_dates, 
+                        x='date', 
+                        y='count',
+                        color_discrete_sequence=['#36d1dc'],
+                        labels={'date': 'Date', 'count': 'Exercises'},
+                        title='Your Workout Frequency'
+                    )
+                    fig.update_layout(
+                        plot_bgcolor='rgba(0,0,0,0)',
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        font_color='rgba(255,255,255,0.8)',
+                        xaxis=dict(showgrid=False),
+                        yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.1)')
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.info("Not enough data to generate workout frequency chart.")
+                
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+            except Exception as e:
+                st.error(f"Error generating metrics: {e}")

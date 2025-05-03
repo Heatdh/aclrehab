@@ -55,15 +55,15 @@ def get_base64_of_bin_file(bin_file):
     return base64.b64encode(data).decode()
 
 def power_up_animation():
-    # Add Super Saiyan GIF or power-up animation effect via HTML
+    # Add modern fitness-themed animation via HTML
     power_up_html = """
     <div class="power-up-container">
         <div class="power-up-animation"></div>
-        <img src="app/images/power_app_animation.gif" style="max-width: 300px; margin: 0 auto; display: block;">
-        <h3 style="text-align:center; color:#ffcc00; text-shadow:0 0 10px #ffcc00;">POWER LEVEL INCREASED!</h3>
+        <img src="data:image/gif;base64,{0}" style="max-width: 300px; margin: 0 auto; display: block; border-radius: 12px; box-shadow: 0 10px 30px rgba(54, 209, 220, 0.4);">
+        <h3 style="text-align:center; color:#36d1dc; text-shadow:0 0 10px #36d1dc;">POWER LEVEL INCREASED!</h3>
     </div>
     <style>
-    .power-up-container {
+    .power-up-container {{
         position: relative;
         width: 100%;
         height: 300px;
@@ -72,32 +72,40 @@ def power_up_animation():
         justify-content: center;
         align-items: center;
         overflow: hidden;
-    }
-    .power-up-animation {
+        margin: 20px 0;
+    }}
+    .power-up-animation {{
         position: absolute;
         width: 200px;
         height: 200px;
-        background: radial-gradient(circle, rgba(255,204,0,0.8) 0%, rgba(255,204,0,0) 70%);
+        background: radial-gradient(circle, rgba(54, 209, 220, 0.8) 0%, rgba(91, 134, 229, 0) 70%);
         border-radius: 50%;
         animation: power-pulse 2s ease-out forwards;
         z-index: -1;
-    }
-    @keyframes power-pulse {
-        0% {
+    }}
+    @keyframes power-pulse {{
+        0% {{
             transform: scale(0.1);
             opacity: 0;
-        }
-        50% {
+        }}
+        50% {{
             opacity: 1;
-        }
-        100% {
+        }}
+        100% {{
             transform: scale(3);
             opacity: 0;
-        }
-    }
+        }}
+    }}
     </style>
     """
-    return power_up_html
+    
+    # Try to load the GIF file and convert to base64
+    try:
+        gif_base64 = get_base64_of_bin_file("app/images/power_app_animation.gif")
+        return power_up_html.format(gif_base64)
+    except Exception as e:
+        # If file load fails, return the HTML without the image
+        return power_up_html.format("")
 
 # Create necessary data directories
 if not os.path.exists('data'):
@@ -124,7 +132,7 @@ if 'current_username' not in st.session_state:
     st.session_state.current_username = None
 
 if 'power_level' not in st.session_state:
-    st.session_state.power_level = 9000  # Starting power level reference to "It's over 9000!"
+    st.session_state.power_level = 9000  # Starting power level
     st.session_state.show_power_up = False
 
 # Initialize data in session state
@@ -235,16 +243,22 @@ def main_app():
         orientation="horizontal",
     )
 
-    # App title with anime theme
+    # App title with modern theme
     st.markdown("""
     <div style="text-align: center; margin-bottom: 30px;">
-        <h1>SUPER SAIYAN ACL REHAB</h1>
-        <p style="font-style: italic; color: #aaa;">Beyond your limiter... Plus Ultra Recovery!</p>
+        <h1>ACL REHABILITATION TRACKER</h1>
+        <p style="font-style: italic; color: #aaa; letter-spacing: 1px;">Beyond Limits: Achieve Your Ultimate Recovery</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Show current user
-    st.sidebar.markdown(f"**Logged in as:** {st.session_state.current_username}")
+    # Show current user in a nicer format
+    st.sidebar.markdown("""
+    <div class="fitness-card" style="padding: 15px; margin-bottom: 20px;">
+        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">LOGGED IN AS</div>
+        <div style="font-size: 1.2rem; font-weight: 600; color: #36d1dc; margin-top: 5px;">{}</div>
+    </div>
+    """.format(st.session_state.current_username), unsafe_allow_html=True)
+    
     if st.sidebar.button("Logout"):
         # Clear session state
         st.session_state.authenticated = False
@@ -254,18 +268,19 @@ def main_app():
         st.session_state.rom_pain_log = None
         st.rerun()
 
-    # Power level display
+    # Power level display with modern styling
     col1, col2, col3 = st.columns([1, 3, 1])
     with col2:
         if st.session_state.power_level > 0:
             st.markdown(f"""
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h4>POWER LEVEL: {st.session_state.power_level:,}</h4>
-                <div style="background-color: rgba(0,0,0,0.3); border-radius: 10px; height: 30px; width: 100%; margin-top: 10px;">
-                    <div style="background-image: linear-gradient(90deg, #ff4500, #ffcc00, #fff700); 
+            <div class="metric-container" style="text-align: center; margin-bottom: 20px;">
+                <div class="metric-label">POWER LEVEL</div>
+                <div class="metric-value">{st.session_state.power_level:,}</div>
+                <div style="background-color: rgba(25, 30, 40, 0.5); border-radius: 50px; height: 10px; width: 100%; margin-top: 10px; overflow: hidden;">
+                    <div style="background-image: linear-gradient(90deg, #36d1dc, #5b86e5); 
                               width: {min(100, st.session_state.power_level/100)}%; 
                               height: 100%; 
-                              border-radius: 10px;
+                              border-radius: 50px;
                               transition: width 1s ease-in-out;">
                     </div>
                 </div>
@@ -299,10 +314,10 @@ def main_app():
     elif selected == "Progress Dashboard":
         show_dashboard()
 
-    # Footer with anime reference
+    # Footer with modern styling
     st.markdown("""
-    <div style="text-align: center; margin-top: 50px; padding: 20px; border-top: 1px solid #444;">
-        <p>"This isn't even my final form" - Your Knee</p>
+    <div style="text-align: center; margin-top: 50px; padding: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+        <p style="color: rgba(255, 255, 255, 0.5);">Stay consistent. Every day is progress. 💪</p>
     </div>
     """, unsafe_allow_html=True)
 
