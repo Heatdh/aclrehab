@@ -282,7 +282,10 @@ def show_rom_pain():
             """, unsafe_allow_html=True)
             
             # Sort dataframe by date (most recent first)
-            history_df = st.session_state.rom_pain_log.sort_values(by='date', ascending=False).copy()
+            history_df = st.session_state.rom_pain_log.copy()
+            # Convert date column to datetime if it's not already
+            history_df['date'] = pd.to_datetime(history_df['date'])
+            history_df = history_df.sort_values(by='date', ascending=False)
             
             # Prepare for charts
             if len(history_df) >= 2:

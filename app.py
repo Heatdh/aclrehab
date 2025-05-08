@@ -124,26 +124,21 @@ if not os.path.exists('.streamlit'):
             f.write('mongo_uri = "mongodb://localhost:27017"\n')
             f.write('\n# Add other secrets below as needed\n')
 
-# Initialize session state variables if they don't exist
+# Initialize session state variables
 if 'authenticated' not in st.session_state:
     st.session_state.authenticated = False
-
 if 'current_username' not in st.session_state:
     st.session_state.current_username = None
-
 if 'power_level' not in st.session_state:
-    st.session_state.power_level = 9000  # Starting power level
+    st.session_state.power_level = 0
+if 'show_power_up' not in st.session_state:
     st.session_state.show_power_up = False
-
-# Initialize data in session state
-if 'user_data' not in st.session_state and st.session_state.current_username:
-    st.session_state.user_data = get_user_profile(st.session_state.current_username)
-
-if 'exercise_log' not in st.session_state and st.session_state.current_username:
-    st.session_state.exercise_log = get_exercise_log(st.session_state.current_username)
-
-if 'rom_pain_log' not in st.session_state and st.session_state.current_username:
-    st.session_state.rom_pain_log = get_rom_pain_log(st.session_state.current_username)
+if 'rom_pain_log' not in st.session_state:
+    st.session_state.rom_pain_log = pd.DataFrame()
+if 'exercise_log' not in st.session_state:
+    st.session_state.exercise_log = pd.DataFrame()
+if 'user_data' not in st.session_state:
+    st.session_state.user_data = pd.DataFrame()
 
 # Authentication function
 def login_form():
