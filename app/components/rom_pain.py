@@ -225,10 +225,13 @@ def show_rom_pain():
             if st.session_state.rom_pain_log.empty:
                 st.session_state.rom_pain_log = new_entry
             else:
-                # Convert columns in existing dataframe to match new entry types
+                # Convert columns in existing dataframe to match new entry
                 for col in new_entry.columns:
                     if col in st.session_state.rom_pain_log.columns:
-                        st.session_state.rom_pain_log[col] = st.session_state.rom_pain_log[col].astype(new_entry[col].dtypes.iloc[0])
+                        # Get the dtype from the new entry
+                        new_dtype = new_entry[col].dtype
+                        # Convert the column in the existing dataframe
+                        st.session_state.rom_pain_log[col] = st.session_state.rom_pain_log[col].astype(new_dtype)
                 
                 # Now concatenate with matching dtypes
                 st.session_state.rom_pain_log = pd.concat([st.session_state.rom_pain_log, new_entry], ignore_index=True)
