@@ -213,7 +213,7 @@ def show_rom_pain():
         if submitted:
             # Create a new entry
             new_entry = pd.DataFrame({
-                'date': [log_date.strftime("%Y-%m-%d")],
+                'date': [pd.to_datetime(log_date)],
                 'extension_angle': [float(extension_angle)],
                 'flexion_angle': [float(flexion_angle)],
                 'pain_level': [int(pain_level)],
@@ -225,6 +225,9 @@ def show_rom_pain():
             if st.session_state.rom_pain_log.empty:
                 st.session_state.rom_pain_log = new_entry
             else:
+                # Convert date column to datetime in existing dataframe
+                st.session_state.rom_pain_log['date'] = pd.to_datetime(st.session_state.rom_pain_log['date'])
+                
                 # Convert columns in existing dataframe to match new entry
                 for col in new_entry.columns:
                     if col in st.session_state.rom_pain_log.columns:
@@ -283,7 +286,7 @@ def show_rom_pain():
             
             # Sort dataframe by date (most recent first)
             history_df = st.session_state.rom_pain_log.copy()
-            # Convert date column to datetime if it's not already
+            # Ensure date column is datetime
             history_df['date'] = pd.to_datetime(history_df['date'])
             history_df = history_df.sort_values(by='date', ascending=False)
             
